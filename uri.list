@@ -1,0 +1,5 @@
+/
+/redirect/6
+/redirect-to?status_code=307&url=http%3A%2F%2Fhttpbingo.org
+/relative-redirect/3
+/redirect-to?status_code=307&url=http%3A%2F%2Fexample.com%2Fnot-exists
