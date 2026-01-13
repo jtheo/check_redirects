@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -46,7 +47,7 @@ func worker(nextURL string, wc workerConfig) {
 
 	fullParse, err := url.Parse(nextURL)
 	if err != nil {
-		fmt.Fprintln(wc.outF, "parse failed", response{
+		_, err := fmt.Fprintln(wc.outF, "parse failed", response{
 			initialURI: "",
 			status:     0,
 			finalURI:   nextURL,
@@ -54,6 +55,9 @@ func worker(nextURL string, wc workerConfig) {
 			nRedir:     0,
 			latency:    time.Since(start),
 		})
+		if err != nil {
+			log.Fatalf("worker failed printing with error: %v\n", err)
+		}
 
 		return
 	}
@@ -71,7 +75,10 @@ func worker(nextURL string, wc workerConfig) {
 			nRedir:     0,
 			latency:    0,
 		}
-		fmt.Fprintln(wc.outF, r)
+		_, err := fmt.Fprintln(wc.outF, r)
+		if err != nil {
+			log.Fatalf("worker failed printing with error: %v\n", err)
+		}
 
 		return
 	}
@@ -88,7 +95,10 @@ func worker(nextURL string, wc workerConfig) {
 				nRedir:     i,
 				latency:    time.Since(start),
 			}
-			fmt.Fprintln(wc.outF, r)
+			_, err := fmt.Fprintln(wc.outF, r)
+			if err != nil {
+				log.Fatalf("worker failed printing with error: %v\n", err)
+			}
 
 			return
 		}
@@ -158,5 +168,8 @@ func worker(nextURL string, wc workerConfig) {
 	if r.finalURI == "" {
 		r.finalURI = "/"
 	}
-	fmt.Fprintln(wc.outF, r)
+	_, err = fmt.Fprintln(wc.outF, r)
+	if err != nil {
+		log.Fatalf("worker failed printing with error: %v\n", err)
+	}
 }

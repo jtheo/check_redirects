@@ -1,7 +1,12 @@
 #!/bin/bash
 
 function log() {
-  echo "===== $(date) ==> ${*}"
+  echo "$(date): ========================> ${*}"
+}
+
+function err() {
+  printf "${*}" | xargs -IX bash -c 'echo -e "$(date): \033[0;31m X\033[0m"'
+  exit 1
 }
 
 log "Running go vet"
@@ -9,7 +14,6 @@ if ! go vet ./...; then
   echo "go vet failed"
   exit 1
 fi
-echo
 
 shopt -s nullglob
 set -- *_test.go
@@ -21,45 +25,49 @@ if [ "$#" -gt 0 ]; then
   fi
 fi
 shopt -u nullglob
-echo
 
 if type -p govulncheck >/dev/null; then
   log "Running govulncheck"
   govulncheck ./...
 fi
-echo
 
 if type -p golangci-lint >/dev/null; then
   log "Running golangci-lint"
-  if ! golangci-lint run -E revive -E errcheck -E nilerr -E gosec -E staticcheck -E prealloc; then
-    echo "Check above..."
+  if ! golangci-lint run -E revive -E errcheck -E nilerr -E gosec -E staticcheck -E prealloc -E nilerr -E gochecksumtype -E exhaustruct; then
+    err "Check above..."
   fi
 fi
-echo
 
 D=$(basename "${PWD}")
-
+dst=dist
+verFile=version.txt
 name=${1:-$D}
-mkdir -p bin
+mkdir -p "${dst}"
 
-read -r h m s <<<"$(date "+%H %M %S")"
-minor=$(((${h##0} + 1) * (${m##0} + 1) * (${s##0} + 1)))
-major=$(date +%Y%m%d)
-version="${major}.${minor}"
+if [[ -e ${verFile} ]]; then
+  version=$(tr -d '\n' <${verFile})
+  version=$((version + 1))
+else
+  version=1
+fi
 
 oses=(linux darwin)
 archs=(amd64 arm64)
 
-log "building..."
+log "building version ${version}..."
+echo "Building "
 
 for GOOS in "${oses[@]}"; do
+  printf "  - %s " "${GOOS}"
   for GOARCH in "${archs[@]}"; do
-    echo "Building ${GOARCH} for ${GOOS}..."
+    printf "%s " "${GOARCH}"
     # shellcheck disable=SC2097,SC2098
     GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=0 \
-      go build -ldflags "-s -w -X 'main.Version=v${version}'" \
-      -o "bin/${name}-${GOOS}-${GOARCH}" .
+      go build -ldflags "-s -w -X 'main.Version=${version}'" \
+      -o "${dst}/${name}-${GOOS}-${GOARCH}" .
   done
+  echo
 done
 
+printf "%s" "${version}" >"${verFile}"
 echo

@@ -67,7 +67,7 @@ func Setup() (*workerConfig, *config, []string) {
 	var err error
 
 	if *logFile != "" {
-		outF, err = os.OpenFile(*logFile, os.O_CREATE|os.O_WRONLY, 0o644)
+		outF, err = os.OpenFile(*logFile, os.O_CREATE|os.O_WRONLY, 0o600)
 		if err != nil {
 			log.Fatal(err)
 		}
