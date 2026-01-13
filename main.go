@@ -1,3 +1,4 @@
+// Check a list of uri to verify the number of redirects and final path
 package main
 
 import (
@@ -15,7 +16,11 @@ func main() {
 	if c.verbose {
 		// fmt.Printf("\n\n%#v\n\n%#v\n\n", *wc, *c)
 		fmt.Printf("Start processing %d uris against %s with host %s and %d workers\n\n", len(list), c.base, wc.host, c.nWorker)
-		fmt.Fprintf(wc.outF, "%q,%q,%s,%s,%s,%s\n", "Initial URI", "Final URI", "Status Code", "Nr. Rediretc", "Error", "Latency")
+		_, err := fmt.Fprintf(wc.outF, "%q,%q,%s,%s,%s,%s\n", "Initial URI", "Final URI", "Status Code", "Nr. Rediretc", "Error", "Latency")
+		if err != nil {
+			panic(err)
+		}
+
 	}
 
 	limiter := make(chan struct{}, c.nWorker)
