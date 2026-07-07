@@ -1,7 +1,7 @@
 module github.com/jtheo/check_redirects
 
-go 1.24.0
+go 1.25.0
 
-require golang.org/x/net v0.49.0
+require golang.org/x/net v0.56.0
 
-require golang.org/x/text v0.33.0 // indirect
+require golang.org/x/text v0.39.0 // indirect
